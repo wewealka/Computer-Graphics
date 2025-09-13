@@ -25,7 +25,21 @@ function generateCissoidPoints(a: number = 3, tMax = 5, step = 0.01) {
   return { points, colors };
 }
 
-export default function Cissoid({ a }: { a: number }) {
+export default function Cissoid({
+  a,
+  position,
+}: {
+  a: number;
+  position?: [number, number, number];
+}) {
   const { points, colors } = useMemo(() => generateCissoidPoints(a), [a]);
-  return <Line points={points} vertexColors={colors} lineWidth={3} />;
+
+  return (
+    <Line
+      points={points}
+      vertexColors={colors}
+      lineWidth={3}
+      position={position}
+    />
+  );
 }
