@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
-import Cissoid from "./Cissoid";
-import StaticAxes from "./StaticAxes";
-import BoundingCube from "./BoundingCube";
+import StaticAxes from "./components/StaticAxes";
+import Cissoid from "./components/Cissoid";
+import BoundingCube from "./components/BoundingCube";
 
 export default function Hw1Scene() {
   const [a, setA] = useState(3);
@@ -84,7 +84,12 @@ export default function Hw1Scene() {
 
           <OrbitControls />
           <StaticAxes size={10} />
-          <Grid args={[20, 20]} position={[0, 0, 0]} cellColor="#ccc" sectionColor="#999" />
+          <Grid
+            args={[20, 20]}
+            position={[0, 0, 0]}
+            cellColor="#ccc"
+            sectionColor="#999"
+          />
 
           <Cissoid a={a} position={[x, y, z]} />
           <BoundingCube size={10} />

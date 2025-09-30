@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function BoundingCube({ size = 10 }: { size?: number }) {
   return (
     <mesh>
