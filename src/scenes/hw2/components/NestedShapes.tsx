@@ -10,7 +10,6 @@ interface NestedShapesProps {
   mu?: number;
   isDashed?: boolean;
   zOffset?: number;
-  rotationStep?: number;
 }
 
 export default function NestedShapes({
@@ -20,7 +19,6 @@ export default function NestedShapes({
   mu = 0.1,
   isDashed = false,
   zOffset = 0,
-  rotationStep = Math.PI / 20,
 }: NestedShapesProps) {
   const polygons = useMemo(() => {
     const allPolygons: Polygon[] = [];
@@ -43,8 +41,6 @@ export default function NestedShapes({
 
     allPolygons.push(currentVertices);
 
-    const rotationMatrix = new THREE.Matrix4();
-
     for (let i = 0; i < levels; i++) {
       const nextVertices: THREE.Vector3[] = [];
       const currentZ = (i + 1) * zOffset;
@@ -57,23 +53,19 @@ export default function NestedShapes({
         nextVertices.push(newVertex);
       }
 
-      rotationMatrix.makeRotationZ(rotationStep);
-      for (let j = 0; j < nextVertices.length; j++) {
-        nextVertices[j].applyMatrix4(rotationMatrix);
-      }
-
       allPolygons.push(nextVertices);
       currentVertices = nextVertices;
     }
 
     return allPolygons;
-  }, [sides, levels, initialRadius, mu, zOffset, rotationStep]);
+  }, [sides, levels, initialRadius, mu, zOffset]);
 
   return (
     <group>
       {polygons.map((polygon, index) => {
         const points = [...polygon, polygon[0]];
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        
         const material = isDashed
           ? new THREE.LineDashedMaterial({
               color: 0x0077ff,
@@ -89,11 +81,12 @@ export default function NestedShapes({
           ? new THREE.Line(geometry, material as THREE.LineDashedMaterial)
           : new THREE.Line(geometry, material);
   
-        if (isDashed) line.computeLineDistances();
+        if (isDashed) {
+          line.computeLineDistances();
+        }
   
         return <primitive key={index} object={line} />;
       })}
     </group>
   );
-  
 }

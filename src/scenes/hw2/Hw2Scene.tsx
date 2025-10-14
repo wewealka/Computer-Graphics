@@ -116,12 +116,11 @@ export default function Hw2Scene() {
       initialRadius,
       isDashed,
       zOffset,
-      rotationStep: Math.PI / 15,
     },
   };
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
       <ControlPanel {...controlPanelProps} />
       <SceneContainer {...sceneContainerProps} />
     </div>
