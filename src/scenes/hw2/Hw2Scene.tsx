@@ -116,6 +116,7 @@ export default function Hw2Scene() {
       initialRadius,
       isDashed,
       zOffset,
+      rotationStep: Math.PI / 15,
     },
   };
 

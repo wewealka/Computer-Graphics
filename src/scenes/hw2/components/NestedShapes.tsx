@@ -10,6 +10,7 @@ interface NestedShapesProps {
   mu?: number;
   isDashed?: boolean;
   zOffset?: number;
+  rotationStep?: number;
 }
 
 export default function NestedShapes({
@@ -19,9 +20,11 @@ export default function NestedShapes({
   mu = 0.1,
   isDashed = false,
   zOffset = 0,
+  rotationStep = Math.PI / 20,
 }: NestedShapesProps) {
   const polygons = useMemo(() => {
     const allPolygons: Polygon[] = [];
+
     if (sides < 3) return allPolygons;
 
     let currentVertices: THREE.Vector3[] = [];
@@ -37,11 +40,15 @@ export default function NestedShapes({
         )
       );
     }
+
     allPolygons.push(currentVertices);
+
+    const rotationMatrix = new THREE.Matrix4();
 
     for (let i = 0; i < levels; i++) {
       const nextVertices: THREE.Vector3[] = [];
       const currentZ = (i + 1) * zOffset;
+
       for (let j = 0; j < sides; j++) {
         const p1 = currentVertices[j];
         const p2 = currentVertices[(j + 1) % sides];
@@ -49,44 +56,44 @@ export default function NestedShapes({
         newVertex.z = currentZ;
         nextVertices.push(newVertex);
       }
+
+      rotationMatrix.makeRotationZ(rotationStep);
+      for (let j = 0; j < nextVertices.length; j++) {
+        nextVertices[j].applyMatrix4(rotationMatrix);
+      }
+
       allPolygons.push(nextVertices);
       currentVertices = nextVertices;
     }
+
     return allPolygons;
-  }, [sides, levels, initialRadius, mu, zOffset]);
-
-  const linePoints = useMemo(() => {
-    const points: THREE.Vector3[] = [];
-    if (polygons.length < 2) return points;
-
-    const firstPolygon = polygons[0];
-    for (let i = 0; i < sides; i++) {
-      points.push(firstPolygon[i]);
-      points.push(firstPolygon[(i + 1) % sides]);
-    }
-
-    for (let i = 0; i < polygons.length - 1; i++) {
-      const outerPolygon = polygons[i];
-      const innerPolygon = polygons[i + 1];
-      for (let j = 0; j < sides; j++) {
-        points.push(outerPolygon[j]);
-        points.push(innerPolygon[j]);
-      }
-    }
-    return points;
-  }, [polygons, sides]);
-
-  const geometry = useMemo(() => {
-    return new THREE.BufferGeometry().setFromPoints(linePoints);
-  }, [linePoints]);
+  }, [sides, levels, initialRadius, mu, zOffset, rotationStep]);
 
   return (
-    <lineSegments geometry={geometry}>
-      {isDashed ? (
-        <lineDashedMaterial color="tomato" dashSize={0.5} gapSize={0.25} />
-      ) : (
-        <lineBasicMaterial color="dodgerblue" />
-      )}
-    </lineSegments>
+    <group>
+      {polygons.map((polygon, index) => {
+        const points = [...polygon, polygon[0]];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = isDashed
+          ? new THREE.LineDashedMaterial({
+              color: 0x0077ff,
+              dashSize: 0.3,
+              gapSize: 0.2,
+            })
+          : new THREE.LineBasicMaterial({
+              color: 0x0077ff,
+              linewidth: 1,
+            });
+  
+        const line = isDashed
+          ? new THREE.Line(geometry, material as THREE.LineDashedMaterial)
+          : new THREE.Line(geometry, material);
+  
+        if (isDashed) line.computeLineDistances();
+  
+        return <primitive key={index} object={line} />;
+      })}
+    </group>
   );
+  
 }
